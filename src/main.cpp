@@ -76,10 +76,7 @@ void calculateShotLength()
 {
   for (int i = 0; i < 60; i++)
   {
-    Serial.print(i);
     int pressurePoint = pressureProfile.pressure[i];
-    Serial.print(" pressure ");
-    Serial.println(pressurePoint);
     if (pressurePoint < 0)
     {
       shotLength = i;
@@ -268,11 +265,7 @@ void setup()
       break;
     }
     delay(1000);
-    Serial.println("Connecting to WiFi..");
   }
-
-  Serial.print("Connected to ");
-  Serial.println(WiFi.localIP());
 
   configuration = new Configuration();
 
@@ -306,10 +299,8 @@ void setup()
   AsyncCallbackJsonWebHandler *configurationUploadHandler = new AsyncCallbackJsonWebHandler("/uploadConfiguration", [](AsyncWebServerRequest *request, JsonVariant &json)
                                                                                             {
     
-    Serial.println("Handling configuration upload");
     JsonObject jsonObj = json.as<JsonObject>();
     if (jsonObj.isNull()) {
-      Serial.println("Something went wrong with upload");
       request->send(400);
       return;
     }
@@ -325,9 +316,6 @@ void setup()
     steamTemperature = boilerSteamTemperature;
     espressoTemperature = boilerEspressoTemperature;
 
-    Serial.print("Selected profile is now: ");
-    Serial.println(selectedProfile);
-
     JsonArray pumpCalibration = jsonObj["pumpCalibration"];
     const int pumpCalibrationLength = pumpCalibration.size();
 
@@ -342,7 +330,6 @@ void setup()
 
     if (oldBoilerP != boilerP || oldBoilerI != boilerI || oldBoilerD != boilerD) {
       heaterPID->SetTunings(boilerP, boilerI, boilerD);
-      Serial.println("Setting PID to new settings");
     }
 
     bool machineConfigurationUpdated = configuration->updateConfiguration(boilerTimeout, boilerSteamTemperature, boilerEspressoTemperature, autoFlushTime, fastHeatCutOff, pumpCalibrationData, boilerP, boilerI, boilerD, selectedProfile);
@@ -419,11 +406,9 @@ void setup()
               if (request->hasParam("EnableCalibration")) {
                 runCalibration = request->getParam("EnableCalibration")->value();
                 if (runCalibration == "true") {
-                  Serial.println("Start calibration");
                   runPumpCalibration = true;
                   boiler.setPower(0);
                 } else {
-                  Serial.println("Stop Calibration");
                   runPumpCalibration = false;
                   pump.setPower(0);
                 }
@@ -432,7 +417,6 @@ void setup()
 
   server.on("/updatePumpPower", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-              // Needs better message like pump calibration mode is not
               if (!runPumpCalibration) {
                 request->send(200);
                 return;
@@ -443,9 +427,6 @@ void setup()
               if (request->hasParam("Power"))
               {
                 power = request->getParam("Power")->value().toInt();
-                // needs validation
-                Serial.print("Setting pump power to: ");
-                Serial.println(power);
                 pump.setPower(power);
               }
               if (request->hasParam("Pressure"))
@@ -458,8 +439,6 @@ void setup()
 
   AsyncCallbackJsonWebHandler *profileUploadHandler = new AsyncCallbackJsonWebHandler("uploadProfile", [](AsyncWebServerRequest *request, JsonVariant &json)
                                                                                       {
-  Serial.println("Handling message now");
-
   JsonObject jsonObj = json.as<JsonObject>();
   if (jsonObj.isNull())
   {
@@ -484,11 +463,6 @@ void setup()
   server.serveStatic("/", SPIFFS, "/dashboard/");
 
   // Handle Web Server Events
-  events.onConnect([](AsyncEventSourceClient *client)
-                   {
-    if(client->lastId()){
-      Serial.printf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
-    } });
   server.addHandler(&events);
   server.addHandler(configurationUploadHandler);
   server.addHandler(profileUploadHandler);
@@ -511,9 +485,6 @@ void setup()
   calculateShotLength();
 
   cycleCount = machineStats->getCycleCount();
-  Serial.print("Cycle count");
-  Serial.print(cycleCount);
-  Serial.println();
 
   // refactor this in settings file
   espressoTemperature = configuration->getConfiguration().boilerEspressoTemperature;
@@ -531,8 +502,6 @@ void setup()
 
   // for test only
 
-  Serial.print("PID Mode ");
-  Serial.print(heaterPID->GetMode());
   // test code only, needs a check on thermocouple first
   int tempBoilerTemp = 24;
   int boilerThermoCouple = getBoilerTemp();
@@ -550,13 +519,6 @@ void setup()
   digitalWrite(DIMMER_BYPASS_PIN, LOW);
 
   systemState = 1;
-
-  Serial.println();
-  Serial.print("Version ");
-  Serial.print(MAJOR_FIRMWARE_VERSION);
-  Serial.print(".");
-  Serial.print(MINOR_FIRMWARE_VERSION);
-  Serial.println();
 
   AsyncElegantOTA.begin(&server);
 }
@@ -589,7 +551,6 @@ void sendDataPayload(int espressoTemp, int steamTemp, int pressure, int cycleTim
 
 void loop()
 {
-  Serial.println("Idling");
   int pumpPressureCount = 1;
   bool pumpCalibrated = false;
   while (runPumpCalibration)
