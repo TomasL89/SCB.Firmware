@@ -1,0 +1,1 @@
+{"boilerTimeout":0,"boilerSteamTemperature":140,"boilerEspressoTemperature":94,"autoFlushTime":0,"fastHeatCutOff":80,"boilerP":1,"boilerI":1,"boilerD":1,"selectedProfile":1,"pumpCalibration": [0,26,29,32,35,38,40,42,45,47,0,0,0,0]}
