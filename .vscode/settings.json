@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "espasyncwebserver.h": "c",
+        "arduinojson.h": "c",
+        "new": "cpp"
+    }
+}
