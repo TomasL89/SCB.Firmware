@@ -26,6 +26,8 @@ public:
     void drawPumpCalibration(int targetPressure, float currentPressure, int currentPower, int sensorReading);
     void drawSimpleProgressPage(int temperature, int pressure, int currentTime, int shotTime);
 
+    void drawDiagnostics(int targetTemperature, int currentTemperature, bool steamMode, int currentPower, int pidPoint, bool connectedToWiFi);
+
 private:
     int _lcdCSPin;
     int _lcdDCPin;

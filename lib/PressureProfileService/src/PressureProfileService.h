@@ -16,6 +16,7 @@ public:
     bool updatePressureProfile(int profileId, int pressure[60]);
     PressureProfile getPressureProfileById(int profileId);
     PressureProfile getLoadedPressureProfile();
+    void setPressureProfile(int profileId);
 
 private:
     PressureProfile _pressureProfile;

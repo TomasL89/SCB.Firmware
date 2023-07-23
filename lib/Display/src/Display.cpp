@@ -903,3 +903,31 @@ void Display::drawSimpleProgressPage(int temperature, int pressure, int currentT
 	tft->fillArc(120, 120, 110, 100, 105, 255, UI_PURPLE);
 	tft->fillArc(120, 120, 110, 100, 285, 75, UI_BLUE);
 }
+
+void Display::drawDiagnostics(int targetTemperature, int currentTemperature, bool steamMode, int currentPower, int pidPoint, bool connectedToWiFi)
+{
+	tft->setTextSize(1);
+	tft->fillScreen(UI_WHITE);
+	tft->setTextColor(UI_BLACK);
+	tft->setCursor(40, 40);
+	tft->print("Target: ");
+	tft->print(targetTemperature);
+	tft->print(" C");
+	tft->setCursor(40, 60);
+	tft->print("Current: ");
+	tft->print(currentTemperature);
+	tft->print(" C");
+	tft->setCursor(40, 80);
+	tft->print("Power: ");
+	tft->print(currentPower);
+	tft->print(" %");
+	tft->setCursor(40, 100);
+	tft->print("PID: ");
+	tft->print(pidPoint);
+	tft->setCursor(40, 120);
+	tft->print("Steam Mode: ");
+	tft->print(steamMode);
+	tft->setCursor(40, 140);
+	tft->print("WiFi: ");
+	tft->print(connectedToWiFi);
+}

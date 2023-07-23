@@ -49,82 +49,15 @@ PressureProfile getPressureProfile(int profileId)
     return loadedProfile;
 }
 
-// PressureProfile loadPressureProfileFromFile(int profileId)
-// {
-//     if (profileId < 1 || profileId > 5)
-//     {
-//         Serial.println("Using default profile 1");
-//         profileId = 1;
-//     }
-//     String fileExtension = ".txt";
-//     String fileName = "/p" + String(profileId) + fileExtension;
-//     Serial.print("Opening file: ");
-//     Serial.println(fileName);
-//     File pressureFile = SPIFFS.open(fileName);
-//     StaticJsonDocument<PROFILE_SIZE> doc;
-//     DeserializationError error = deserializeJson(doc, pressureFile.readString());
-
-//     _pressureProfile->profileId = doc["profileId"];
-//     JsonArray pressureData = doc["pressure"];
-
-//     for (int i = 0; i < 60; i++)
-//     {
-//         _pressureProfile->pressure[i] = pressureData[i];
-//     }
-
-//     _pressureProfile->shotLength = calculateShotLength(_pressureProfile->pressure);
-// }
-
 PressureProfileService::PressureProfileService(Configuration *configuration)
 {
     Serial.println("Loading pressure profile service");
     _configurationForPressureProfileService = configuration;
-    // int defaultPressureProfile[60] = {
-    //     2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    //     9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
-    //     9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
-    //     9, 9, 9, 9, 8, -1, -1, -1, -1, -1,
-    //     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    //     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-
-    // update this once the selected profile is stored in another settings file
-    // File pressureFile = SPIFFS.open("/p1.txt");
-    // if (!pressureFile)
-    // {
-    //     Serial.println("No pressure profile found, creating new one");
-    //     // -1 to indicate it is the default profile
-    //     if (updatePressureProfile(DEFAULT_PROFILE_ID, defaultPressureProfile))
-    //     {
-    //         Serial.println("Created default pressure profile and saved it");
-    //     }
-    // }
-    // else
-    // {'
 
     int selectedProfile = _configurationForPressureProfileService->getConfiguration().selectedProfile;
     Serial.print("Attempting to get profile: ");
     Serial.print(selectedProfile);
     _pressureProfile = getPressureProfile(selectedProfile);
-
-    // if ()
-    // if (error)
-    // {
-    //     Serial.println("Error deserialising pressure file, using default");
-    //     if (updatePressureProfile(DEFAULT_PROFILE_ID, defaultPressureProfile))
-    //     {
-    //         Serial.println("Created default pressure file and saved it");
-    //     }
-    // }
-
-    // _pressureProfile.profileId = doc["profile"];
-    // JsonArray pressureData = doc["pressure"];
-
-    // for (int i = 0; i < 60; i++)
-    // {
-    //     _pressureProfile.pressure[i] = pressureData[i];
-    // }
-
-    // _pressureProfile.shotLength = calculateShotLength(_pressureProfile.pressure);
 }
 
 bool PressureProfileService::updatePressureProfile(int profileId, int pressure[60])
@@ -169,12 +102,15 @@ bool PressureProfileService::updatePressureProfile(int profileId, int pressure[6
 
 PressureProfile PressureProfileService::getPressureProfileById(int profileId)
 {
-    // loadPressureProfileFromFile(profileId);
-    // return _pressureProfile;
     return getPressureProfile(profileId);
 }
 
 PressureProfile PressureProfileService::getLoadedPressureProfile()
 {
     return _pressureProfile;
+}
+
+void PressureProfileService::setPressureProfile(int profileId)
+{
+    _pressureProfile = getPressureProfile(profileId);
 }

@@ -147,7 +147,7 @@ Api::Api(int serverPort, Configuration *configuration, PressureProfileService *p
       }
 
       bool machineConfigurationUpdated = _configuration->updateConfiguration(boilerTimeout, boilerSteamTemperature, boilerEspressoTemperature, autoFlushTime, fastHeatCutOff, pumpCalibrationData, boilerP, boilerI, boilerD, selectedProfile);
-
+      _pressureProfileService->setPressureProfile(selectedProfile);
     //   if (machineConfigurationUpdated) {
     //     pressureProfile = pressureProfileService->getPressureProfile(selectedProfile);
     //     calculateShotLength();

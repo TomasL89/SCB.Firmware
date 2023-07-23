@@ -231,7 +231,6 @@
             }
 
             machineTime += extraSeconds + "s";
-            console.log(machineTime);
             document.getElementById("machine-time").innerHTML = machineTime;
         }
 
@@ -376,9 +375,6 @@
                         chartPressure.series[0].addPoint([cycleTime, yP], true, false, true);
                     };
                 }
-
-                // var cardSpan = document.getElementById('card-value');
-                // cardSpan.style.display = "";
             });
 
             downloadProfileJSON().then((data) => {
