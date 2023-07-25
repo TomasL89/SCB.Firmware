@@ -46,7 +46,7 @@ Adafruit_MAX31855 boilerThermo(TEMP_SENSOR_ONE_CS_PIN);
 Adafruit_MAX31855 steamThermo(TEMP_SENSOR_TWO_CS_PIN);
 dimmerLamp pump(PUMP_OUTPUT_PIN, ZERO_CROSS_PIN);
 dimmerLamp boiler(BOILER_OUTPUT_PIN, ZERO_CROSS_PIN);
-PID_v2 heaterPID(2, 5, 1, PID::Direct);
+PID_v2 *heaterPID;
 
 // Custom
 PressureProfileService *pressureProfileService;
@@ -95,7 +95,7 @@ void updateBoilerPower(double boilerTemp)
     return;
   }
 
-  double output = heaterPID.Run(boilerTemp);
+  double output = heaterPID->Run(boilerTemp);
   boiler.setPower(output);
 }
 
@@ -108,16 +108,16 @@ void updateSteamPower(double steamTemp)
     return;
   }
 
-  if (steamTemp < 130)
+  if (steamTemp < 145)
   {
     boiler.setPower(0);
     digitalWrite(DIMMER_BYPASS_PIN, HIGH);
     fullPowerSet = true;
   }
-  else if (steamTemp >= 130)
+  else if (steamTemp >= 145)
   {
     digitalWrite(DIMMER_BYPASS_PIN, LOW);
-    double output = heaterPID.Run(steamTemp);
+    double output = heaterPID->Run(steamTemp);
     boiler.setPower(output);
     fullPowerSet = false;
   }
@@ -241,19 +241,20 @@ void setup()
   machineStats = new Stats();
   api = new Api(80, configuration, pressureProfileService);
   display = new Display(LCD_CS_PIN, LCD_DC_PIN, LCD_RST_PIN, LCD_BL_PIN);
-  heaterPID.SetOutputLimits(0, 155);
-  heaterPID.SetMode(PID::Automatic);
+  heaterPID = new PID_v2(configuration->getConfiguration().boilerP, configuration->getConfiguration().boilerI, configuration->getConfiguration().boilerD, PID::Direct, PID::P_On::Measurement);
+  heaterPID->SetOutputLimits(0, configuration->getConfiguration().boilerEspressoTemperature);
+  heaterPID->SetMode(PID::Automatic);
 
   int tempBoilerTemp = 24;
   int boilerThermoCouple = getBoilerTemp();
 
   if (getBoilerTemp() > 0)
   {
-    heaterPID.Start(getBoilerTemp(), 0, configuration->getConfiguration().boilerEspressoTemperature);
+    heaterPID->Start(getBoilerTemp(), 0, configuration->getConfiguration().boilerEspressoTemperature);
   }
   else
   {
-    heaterPID.Start(tempBoilerTemp, 0, configuration->getConfiguration().boilerEspressoTemperature);
+    heaterPID->Start(tempBoilerTemp, 0, configuration->getConfiguration().boilerEspressoTemperature);
   }
 
   boiler.begin(NORMAL_MODE, ON);
@@ -301,12 +302,12 @@ void loop()
   int *pressureProfile = pressureProfileService->getLoadedPressureProfile().pressure;
 
   // check temperature and compute PID every 100ms for better read.
-  for (int i = 0; i < 9; i++)
-  {
-    boilerTemp = getBoilerTemp();
-    steamTemp = getSteamTemp();
-    delay(100);
-  }
+  // for (int i = 0; i < 9; i++)
+  // {
+  //   boilerTemp = getBoilerTemp();
+  //   steamTemp = getSteamTemp();
+  //   delay(100);
+  // }
 
   boilerTemp = getBoilerTemp();
   steamTemp = getSteamTemp();
@@ -364,15 +365,19 @@ void loop()
   {
     if (steamModeOn)
     {
-      heaterPID.Setpoint(configuration->getConfiguration().boilerSteamTemperature);
+      heaterPID->SetOutputLimits(0, configuration->getConfiguration().boilerSteamTemperature);
+      heaterPID->Setpoint(configuration->getConfiguration().boilerSteamTemperature);
     }
     else
     {
-      heaterPID.Setpoint(configuration->getConfiguration().boilerEspressoTemperature);
+      // this is being held on by the steam mode and wasn't been set back to low again after it switches
+      heaterPID->SetOutputLimits(0, configuration->getConfiguration().boilerEspressoTemperature);
+      digitalWrite(DIMMER_BYPASS_PIN, LOW);
+      heaterPID->Setpoint(configuration->getConfiguration().boilerEspressoTemperature);
     }
     temperatureLimitChanged = false;
   }
 
-  delay(100);
+  delay(1000);
   sendDataPayload(boilerTemp, steamTemp, pumpPressure, cycleTime);
 }
